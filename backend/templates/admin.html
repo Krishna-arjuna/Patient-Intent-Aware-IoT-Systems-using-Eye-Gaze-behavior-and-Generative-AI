@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel - PatientVision</title>
+
+<style>
+body {
+    background: #050b12;
+    color: #c8e0f4;
+    font-family: Arial;
+    padding: 20px;
+}
+
+h2 { margin-bottom: 20px; }
+
+.card {
+    background: #0c1825;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #162436;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    background: #0f1f30;
+    border: 1px solid #162436;
+    color: white;
+    border-radius: 5px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    background: #00d4ff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.patient {
+    padding: 10px;
+    border-bottom: 1px solid #162436;
+    display: flex;
+    justify-content: space-between;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>ADMIN CONTROL PANEL</h2>
+
+<!-- ADD PATIENT -->
+
+<div class="card">
+    <h3>Add Patient</h3>
+    <input id="name" placeholder="Name">
+    <input id="age" placeholder="Age">
+    <input id="disease" placeholder="Disease">
+    <button onclick="addPatient()">Add Patient</button>
+</div>
+
+<!-- PATIENT LIST -->
+
+<div class="card">
+    <h3>Patient Slots</h3>
+    <div id="patients"></div>
+</div>
+
+<!-- ADD HISTORY -->
+
+<div class="card">
+    <h3>Add Patient History</h3>
+    <select id="patientSelect"></select>
+    <textarea id="historyText" placeholder="Enter history note..."></textarea>
+    <button onclick="addHistory()">Add History</button>
+</div>
+
+<script>
+async function loadPatients() {
+    let res = await fetch("/api/patients");
+    let data = await res.json();
+
+    let container = document.getElementById("patients");
+    let select = document.getElementById("patientSelect");
+
+    container.innerHTML = "";
+    select.innerHTML = "";
+
+    data.forEach(p => {
+        container.innerHTML += `
+        <div class="patient">
+            <div>
+                <b>${p.name}</b> (${p.disease})
+            </div>
+            <div>
+                <button onclick="monitor('${p.id}')">Monitor</button>
+            </div>
+        </div>`;
+
+        select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+    });
+}
+
+async function addPatient() {
+    await fetch("/api/patient/add", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            name: document.getElementById("name").value,
+            age: document.getElementById("age").value,
+            disease: document.getElementById("disease").value
+        })
+    });
+
+    loadPatients();
+}
+
+async function addHistory() {
+    await fetch("/api/patient/history", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            id: document.getElementById("patientSelect").value,
+            text: document.getElementById("historyText").value
+        })
+    });
+
+    alert("History Added");
+}
+
+function monitor(id) {
+    localStorage.setItem("activepatient", id);
+
+    window.location.href = "/dashboard";
+}
+
+loadPatients();
+</script>
+
+</body>
+</html>

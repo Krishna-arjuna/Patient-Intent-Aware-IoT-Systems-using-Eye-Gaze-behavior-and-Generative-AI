@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PatientVision – Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<script type="module" src="/static/js/auth.js"></script>
+<style>
+:root{--bg:#050b12;--card:#0b1622;--border:#162436;--accent:#00d4ff;--accent2:#ff4f7b;--text:#c8e0f4;--muted:#3d6a8a;--mono:'Share Tech Mono',monospace;--sans:'Syne',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:var(--sans);overflow:hidden;}
+
+/* animated grid bg */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.04) 1px,transparent 1px);background-size:40px 40px;animation:drift 20s linear infinite;}
+@keyframes drift{from{background-position:0 0;}to{background-position:40px 40px;}}
+
+.glow-orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;}
+.glow-orb.a{width:400px;height:400px;background:rgba(0,212,255,.07);top:-100px;left:-100px;}
+.glow-orb.b{width:300px;height:300px;background:rgba(255,79,123,.06);bottom:-80px;right:-80px;}
+
+.card{position:relative;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:48px 40px;width:100%;max-width:420px;animation:rise .6s ease both;}
+@keyframes rise{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.card::before{content:'';position:absolute;inset:0;border-radius:12px;background:linear-gradient(135deg,rgba(0,212,255,.06),transparent 60%);pointer-events:none;}
+
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:36px;}
+.logo-eye{width:44px;height:44px;border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;animation:pulse 2.5s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.4);}50%{box-shadow:0 0 0 10px rgba(0,212,255,0);}}
+.logo-eye svg{width:22px;height:22px;fill:var(--accent);}
+.logo-title{font-size:1.5rem;font-weight:800;color:var(--text);letter-spacing:-.01em;}
+.logo-sub{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.15em;}
+
+.role-tabs{display:flex;gap:8px;margin-bottom:28px;}
+.tab{flex:1;padding:10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;}
+.tab.active{background:rgba(0,212,255,.1);border-color:var(--accent);color:var(--accent);}
+
+label{display:block;font-family:var(--mono);font-size:.65rem;letter-spacing:.15em;color:var(--muted);margin-bottom:6px;}
+.field{margin-bottom:20px;}
+input{width:100%;padding:12px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:.9rem;outline:none;transition:border-color .2s;}
+input:focus{border-color:var(--accent);}
+
+.hint{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-top:4px;opacity:.8;}
+
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,#006d85,#004f63);border:1px solid var(--accent);border-radius:6px;color:var(--accent);font-family:var(--mono);font-size:.85rem;letter-spacing:.15em;cursor:pointer;transition:all .25s;margin-top:8px;}
+.btn:hover{background:linear-gradient(135deg,#008aaa,#006d85);box-shadow:0 0 20px rgba(0,212,255,.2);}
+
+.error{background:rgba(255,79,123,.1);border:1px solid rgba(255,79,123,.3);border-radius:4px;padding:10px 14px;font-family:var(--mono);font-size:.75rem;color:var(--accent2);margin-bottom:16px;display:none;}
+
+.badge-row{display:flex;gap:8px;margin-top:28px;justify-content:center;}
+.badge{font-family:var(--mono);font-size:.6rem;padding:3px 10px;border-radius:2px;letter-spacing:.1em;}
+.badge.admin{background:rgba(255,179,0,.1);color:#ffb300;border:1px solid rgba(255,179,0,.3);}
+.badge.viewer{background:rgba(57,255,143,.1);color:#39ff8f;border:1px solid rgba(57,255,143,.3);}
+</style>
+</head>
+<body>
+<div class="glow-orb a"></div>
+<div class="glow-orb b"></div>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-eye">
+      <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+    </div>
+    <div>
+      <div class="logo-title">PatientVision</div>
+      <div class="logo-sub">GAZE MONITORING SYSTEM</div>
+    </div>
+  </div>
+
+  <div class="role-tabs">
+    <button class="tab active" data-role="admin" onclick="setRole(this)">ADMIN</button>
+    <button class="tab" data-role="viewer" onclick="setRole(this)">VIEWER</button>
+  </div>
+
+  <div id="error-box" class="error"></div>
+
+  <div class="field">
+    <label>USERNAME</label>
+    <input id="username" type="text" placeholder="Enter username" autocomplete="off"/>
+    <div class="hint" id="hint">admin / viewer</div>
+  </div>
+  <div class="field">
+    <label>PASSWORD</label>
+    <input id="password" type="password" placeholder="Enter password"/>
+    <div class="hint">admin123 / viewer123</div>
+  </div>
+
+  <button class="btn" onclick="doLogin()">AUTHENTICATE →</button>
+
+  <div class="badge-row">
+   <button class="tab active" data-role="admin" onclick="setRole(this)">ADMIN</button>
+   <button class="tab" data-role="viewer" onclick="setRole(this)">VIEWER</button>
+  </div>
+</div>
+
+<script>
+let selectedRole = "admin";
+
+// 🔥 FIX ROLE SELECTION
+function setRole(btn) {
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    selectedRole = btn.getAttribute("data-role");
+}
+
+// ENTER KEY SUPPORT
+document.getElementById('password').addEventListener('keydown', e => {
+    if(e.key === 'Enter') doLogin();
+});
+
+// 🔥 FIX LOGIN FUNCTION
+async function doLogin() {
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value;
+
+    const errBox = document.getElementById('error-box');
+    errBox.style.display = 'none';
+
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                username: u,
+                role: selectedRole   // ✅ FIXED
+            })
+        });
+
+        const d = await res.json();
+
+        console.log("LOGIN RESPONSE:", d);
+
+        if (!d.success) {
+            errBox.textContent = 'Login failed';
+            errBox.style.display = 'block';
+            return;
+        }
+
+        // 🔥 ROLE-BASED REDIRECT
+        if (d.role === "admin") {
+            window.location.href = "/admin";
+        } else {
+            window.location.href = "/dashboard";
+        }
+
+    } catch(e) {
+        errBox.textContent = 'Connection error';
+        errBox.style.display = 'block';
+    }
+}
+</script>
+</body>
+</html>

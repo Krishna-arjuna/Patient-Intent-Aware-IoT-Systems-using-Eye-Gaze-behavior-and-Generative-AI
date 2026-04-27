@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PatientVision – {{ patient.name }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script type="module" src="/static/js/patient.js"></script>
+<style>
+:root{--bg:#050b12;--surface:#080f1a;--card:#0c1825;--card2:#0f1f30;--border:#162436;--border2:#1e3550;--accent:#00d4ff;--accent2:#ff4f7b;--accent3:#39ff8f;--warn:#ffb300;--text:#c8e0f4;--muted:#3d6a8a;--mono:'Share Tech Mono',monospace;--sans:'Syne',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.02) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:rgba(8,15,26,.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:200;}
+.hdr-left{display:flex;align-items:center;gap:14px;}
+.back-btn{background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:.68rem;padding:6px 12px;cursor:pointer;transition:all .2s;letter-spacing:.1em;}
+.back-btn:hover{border-color:var(--accent);color:var(--accent);}
+.hdr-name{font-size:1.05rem;font-weight:800;}
+.hdr-id{font-family:var(--mono);font-size:.62rem;color:var(--muted);}
+.hdr-right{display:flex;align-items:center;gap:12px;}
+.role-badge{font-family:var(--mono);font-size:.65rem;padding:4px 10px;border-radius:3px;letter-spacing:.1em;}
+.role-admin{background:rgba(255,179,0,.1);color:var(--warn);border:1px solid rgba(255,179,0,.3);}
+.role-viewer{background:rgba(57,255,143,.1);color:var(--accent3);border:1px solid rgba(57,255,143,.3);}
+.btn-sm{font-family:var(--mono);font-size:.65rem;padding:6px 14px;border-radius:4px;cursor:pointer;letter-spacing:.1em;transition:all .2s;}
+.btn-logout{background:transparent;border:1px solid var(--border2);color:var(--muted);}
+.btn-logout:hover{border-color:var(--accent2);color:var(--accent2);}
+.live-ind{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.68rem;color:var(--accent3);}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--accent3);animation:blink .9s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+/* CONTENT */
+.content{max-width:1280px;margin:0 auto;padding:24px 28px;position:relative;z-index:1;}
+/* PATIENT PROFILE BANNER */
+.profile-banner{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;display:flex;align-items:flex-start;gap:24px;position:relative;overflow:hidden;}
+.profile-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.profile-avatar{width:64px;height:64px;border-radius:50%;background:rgba(0,212,255,.07);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;}
+.profile-info{flex:1;}
+.profile-name{font-size:1.4rem;font-weight:800;margin-bottom:4px;}
+.profile-meta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;}
+.meta-item{font-family:var(--mono);font-size:.7rem;color:var(--muted);}
+.meta-item span{color:var(--text);}
+.profile-disease{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);border-radius:5px;padding:8px 14px;font-size:.88rem;display:inline-block;margin-bottom:10px;}
+.profile-notes{font-size:.82rem;color:var(--muted);line-height:1.6;}
+.profile-status-block{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex-shrink:0;}
+.status-badge-lg{padding:5px 16px;border-radius:4px;font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;}
+.sb-Monitoring{background:rgba(57,255,143,.1);color:var(--accent3);border:1px solid rgba(57,255,143,.3);}
+.sb-Critical{background:rgba(255,79,123,.15);color:var(--accent2);border:1px solid rgba(255,79,123,.3);animation:flash 1s infinite;}
+.sb-Stable{background:rgba(0,212,255,.1);color:var(--accent);border:1px solid rgba(0,212,255,.3);}
+.sb-Discharged{background:rgba(74,122,155,.1);color:var(--muted);border:1px solid var(--border);}
+@keyframes flash{0%,100%{opacity:1;}50%{opacity:.5;}}
+.cam-tag{background:rgba(0,212,255,.12);border:1px solid var(--accent);border-radius:3px;font-family:var(--mono);font-size:.62rem;color:var(--accent);padding:4px 10px;}
+.admin-btns{display:flex;gap:8px;}
+.btn-edit-p{padding:7px 14px;background:rgba(255,179,0,.07);border:1px solid rgba(255,179,0,.25);border-radius:4px;color:var(--warn);font-family:var(--mono);font-size:.65rem;cursor:pointer;letter-spacing:.1em;transition:all .2s;}
+.btn-edit-p:hover{background:rgba(255,179,0,.14);}
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;position:relative;overflow:hidden;animation:fade-up .4s ease both;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.4),transparent);}
+@keyframes fade-up{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.c3{grid-column:span 3;}.c4{grid-column:span 4;}.c6{grid-column:span 6;}.c8{grid-column:span 8;}.c12{grid-column:span 12;}
+@media(max-width:900px){.c3,.c4,.c6,.c8{grid-column:span 12;}}
+.card-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;color:var(--muted);margin-bottom:12px;text-transform:uppercase;}
+/* EYE VIZ */
+.eye-wrap{display:flex;justify-content:center;margin:8px 0 14px;}
+.eye-outer{width:110px;height:55px;border:1.5px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(0,212,255,.02);overflow:hidden;}
+.eye-iris{width:28px;height:28px;background:radial-gradient(circle at 40% 40%,var(--accent),#003d52);border-radius:50%;transition:transform .5s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 10px var(--accent);position:relative;}
+.eye-iris::after{content:'';position:absolute;top:5px;left:5px;width:7px;height:7px;background:rgba(255,255,255,.5);border-radius:50%;}
+.gaze-lbl{font-family:var(--mono);font-size:1.6rem;color:var(--accent);text-align:center;letter-spacing:.1em;}
+/* BIG NUM */
+.big-n{font-family:var(--mono);font-size:2.8rem;line-height:1;margin:6px 0 3px;}
+.big-unit{font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.12em;}
+.bar-wrap{height:5px;background:rgba(255,255,255,.04);border-radius:3px;margin-top:12px;overflow:hidden;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--warn));border-radius:3px;transition:width .8s ease;}
+/* AI */
+.intent-txt{font-size:.95rem;font-weight:700;color:var(--text);text-transform:capitalize;margin:8px 0 4px;}
+.urgency-badge{display:inline-block;padding:3px 10px;border-radius:3px;font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;font-weight:700;text-transform:uppercase;margin-bottom:6px;}
+.u-low{background:rgba(57,255,143,.12);color:var(--accent3);border:1px solid var(--accent3);}
+.u-medium{background:rgba(255,179,0,.12);color:var(--warn);border:1px solid var(--warn);}
+.u-high{background:rgba(255,79,123,.18);color:var(--accent2);border:1px solid var(--accent2);animation:flash 1s infinite;}
+.action-txt{font-size:.78rem;color:var(--muted);line-height:1.6;}
+/* CHART */
+.chart-wrap{position:relative;height:185px;}
+/* HISTORY */
+.history-list{display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;}
+.h-entry{display:flex;gap:14px;align-items:flex-start;}
+.h-line{display:flex;flex-direction:column;align-items:center;gap:0;}
+.h-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);flex-shrink:0;margin-top:4px;}
+.h-vert{width:1px;flex:1;background:var(--border);min-height:20px;}
+.h-body{flex:1;padding-bottom:10px;}
+.h-event{font-size:.82rem;font-weight:700;color:var(--accent);}
+.h-date{font-family:var(--mono);font-size:.62rem;color:var(--muted);margin:2px 0;}
+.h-note{font-size:.78rem;color:var(--text);line-height:1.5;}
+/* ADD HISTORY */
+.add-hist-form{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:6px;padding:14px;margin-top:14px;}
+.add-hist-form input,.add-hist-form textarea{width:100%;padding:8px 10px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:.75rem;outline:none;margin-bottom:8px;}
+.add-hist-form input:focus,.add-hist-form textarea:focus{border-color:var(--accent);}
+.btn-add-hist{padding:8px 18px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);border-radius:4px;color:var(--accent);font-family:var(--mono);font-size:.68rem;cursor:pointer;letter-spacing:.1em;transition:all .2s;}
+.btn-add-hist:hover{background:rgba(0,212,255,.15);}
+/* GAZE CHIPS */
+.gaze-log{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;max-height:80px;overflow-y:auto;}
+.gchip{font-family:var(--mono);font-size:.6rem;padding:2px 7px;border-radius:2px;}
+.gc-LEFT{background:rgba(0,212,255,.08);color:var(--accent);border:1px solid rgba(0,212,255,.2);}
+.gc-RIGHT{background:rgba(255,79,123,.08);color:var(--accent2);border:1px solid rgba(255,79,123,.2);}
+.gc-CENTER{background:rgba(57,255,143,.08);color:var(--accent3);border:1px solid rgba(57,255,143,.2);}
+.gc-UNKNOWN{background:rgba(255,255,255,.03);color:var(--muted);border:1px solid var(--border);}
+/* AI LOG */
+.ai-log{display:flex;flex-direction:column;gap:8px;margin-top:8px;max-height:200px;overflow-y:auto;}
+.ai-entry{border-left:2px solid var(--accent);padding:7px 10px;background:rgba(255,255,255,.02);border-radius:0 4px 4px 0;font-size:.76rem;}
+.ae-time{font-family:var(--mono);font-size:.6rem;color:var(--muted);}
+.ae-intent{color:var(--accent);font-weight:700;text-transform:capitalize;}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(5,11,18,.85);backdrop-filter:blur(6px);z-index:500;display:none;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:30px;width:100%;max-width:480px;animation:fade-up .3s ease;}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;justify-content:space-between;}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;}
+.form-field{margin-bottom:14px;}
+.form-field label{display:block;font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-bottom:5px;letter-spacing:.15em;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:9px 11px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:.8rem;outline:none;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--accent);}
+.form-field select option{background:var(--card2);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+.btn-cancel{padding:9px 18px;background:transparent;border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-family:var(--mono);font-size:.7rem;cursor:pointer;letter-spacing:.1em;}
+.btn-save{padding:9px 20px;background:rgba(0,212,255,.1);border:1px solid var(--accent);border-radius:4px;color:var(--accent);font-family:var(--mono);font-size:.7rem;cursor:pointer;letter-spacing:.1em;transition:all .2s;}
+.btn-save:hover{background:rgba(0,212,255,.18);}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px;height:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:5px;font-family:var(--mono);font-size:.72rem;z-index:999;animation:fade-up .3s ease;pointer-events:none;}
+.t-ok{background:rgba(57,255,143,.12);border:1px solid var(--accent3);color:var(--accent3);}
+.t-err{background:rgba(255,79,123,.12);border:1px solid var(--accent2);color:var(--accent2);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-left">
+    <button class="back-btn" onclick="window.location='/dashboard'">← BACK</button>
+    <div>
+      <div class="hdr-name">{{ patient.name }}</div>
+      <div class="hdr-id">{{ patient.id }} · {{ patient.disease }}</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="live-ind"><div class="live-dot"></div>LIVE</div>
+    <span class="user-name" style="font-size:.8rem;color:var(--muted)">{{ name }}</span>
+    <span class="role-badge role-{{ role }}">{{ role | upper }}</span>
+    <button class="btn-sm btn-logout" onclick="logout()">LOGOUT</button>
+  </div>
+</header>
+
+<div class="content">
+
+  <!-- PROFILE BANNER -->
+  <div class="profile-banner">
+    <div class="profile-avatar">{{ patient.gender[0] if patient.gender else '?' }}</div>
+    <div class="profile-info">
+      <div class="profile-name">{{ patient.name }}</div>
+      <div class="profile-meta">
+        <span class="meta-item">AGE: <span>{{ patient.age }}</span></span>
+        <span class="meta-item">GENDER: <span>{{ patient.gender }}</span></span>
+        <span class="meta-item">WARD: <span>{{ patient.ward }}</span></span>
+        <span class="meta-item">ADMITTED: <span>{{ patient.admitted }}</span></span>
+      </div>
+      <div class="profile-disease">{{ patient.disease }}</div>
+      <div class="profile-notes">{{ patient.notes }}</div>
+    </div>
+    <div class="profile-status-block">
+      <span class="status-badge-lg sb-{{ patient.status }}">{{ patient.status }}</span>
+      <span class="cam-tag" id="cam-indicator">CHECKING CAM...</span>
+      {% if role == 'admin' %}
+      <div class="admin-btns">
+        <button class="btn-edit-p" onclick="openEditModal()">EDIT PATIENT</button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- GAZE -->
+    <div class="card c3">
+      <div class="card-label">◈ Live Gaze</div>
+      <div class="eye-wrap"><div class="eye-outer"><div class="eye-iris" id="iris"></div></div></div>
+      <div class="gaze-lbl" id="gaze-lbl">---</div>
+    </div>
+
+    <!-- BLINK COUNT -->
+    <div class="card c3">
+      <div class="card-label">◈ Blink Count</div>
+      <div class="big-n" style="color:var(--accent2)" id="blink-count">0</div>
+      <div class="big-unit">BLINKS DETECTED</div>
+      <div class="bar-wrap"><div class="bar-fill" id="blink-bar" style="width:0%"></div></div>
+    </div>
+
+    <!-- BLINK RATE -->
+    <div class="card c3">
+      <div class="card-label">◈ Blink Rate</div>
+      <div class="big-n" style="color:var(--warn)" id="blink-rate">0</div>
+      <div class="big-unit">BLINKS / 10s</div>
+      <div style="margin-top:10px;font-family:var(--mono);font-size:.62rem;color:var(--muted)">Normal: 2–6 / 10s</div>
+    </div>
+
+    <!-- AI INTENT -->
+    <div class="card c3" style="border-color:rgba(0,212,255,.2)">
+      <div class="card-label">◈ AI Intent</div>
+      <div class="intent-txt" id="ai-intent">Awaiting...</div>
+      <div id="ai-urgency"></div>
+      <div class="action-txt" id="ai-action">No GenAI output yet</div>
+    </div>
+
+    <!-- BLINK CHART -->
+    <div class="card c8">
+      <div class="card-label">◈ Blink Rate Over Time</div>
+      <div class="chart-wrap"><canvas id="blinkChart"></canvas></div>
+    </div>
+
+    <!-- GAZE DONUT -->
+    <div class="card c4">
+      <div class="card-label">◈ Gaze Distribution</div>
+      <div class="chart-wrap" style="height:165px"><canvas id="gazeChart"></canvas></div>
+    </div>
+
+    <!-- GAZE LOG -->
+    <div class="card c4">
+      <div class="card-label">◈ Gaze Event Log</div>
+      <div class="gaze-log" id="gaze-log"><span style="color:var(--muted);font-size:.72rem;font-family:var(--mono)">Waiting...</span></div>
+    </div>
+
+    <!-- AI HISTORY -->
+    <div class="card c8">
+      <div class="card-label">◈ AI Analysis History</div>
+      <div class="ai-log" id="ai-log"><span style="color:var(--muted);font-size:.72rem;font-family:var(--mono)">No analysis yet</span></div>
+    </div>
+
+    <!-- PATIENT HISTORY -->
+    <div class="card c6">
+      <div class="card-label">◈ Medical History</div>
+      <div class="history-list" id="history-list"></div>
+      {% if role == 'admin' %}
+      <div class="add-hist-form">
+        <input id="h-event" placeholder="Event title (e.g. MRI Done)"/>
+        <input id="h-date" type="date"/>
+        <textarea id="h-note" rows="2" placeholder="Notes..."></textarea>
+        <button class="btn-add-hist" onclick="addHistory()">+ ADD ENTRY</button>
+      </div>
+      {% endif %}
+    </div>
+
+  </div><!-- /grid -->
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title">
+      Edit Patient
+      <button class="modal-close" onclick="document.getElementById('edit-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>FULL NAME</label><input id="e-name" value="{{ patient.name }}"/></div>
+      <div class="form-field"><label>AGE</label><input id="e-age" type="number" value="{{ patient.age }}"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>GENDER</label>
+        <select id="e-gender">
+          <option {% if patient.gender=='Male' %}selected{% endif %}>Male</option>
+          <option {% if patient.gender=='Female' %}selected{% endif %}>Female</option>
+          <option {% if patient.gender=='Other' %}selected{% endif %}>Other</option>
+        </select>
+      </div>
+      <div class="form-field"><label>STATUS</label>
+        <select id="e-status">
+          <option {% if patient.status=='Monitoring' %}selected{% endif %}>Monitoring</option>
+          <option {% if patient.status=='Critical' %}selected{% endif %}>Critical</option>
+          <option {% if patient.status=='Stable' %}selected{% endif %}>Stable</option>
+          <option {% if patient.status=='Discharged' %}selected{% endif %}>Discharged</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field"><label>DISEASE / CONDITION</label><input id="e-disease" value="{{ patient.disease }}"/></div>
+    <div class="form-field"><label>WARD</label><input id="e-ward" value="{{ patient.ward }}"/></div>
+    <div class="form-field"><label>NOTES</label><textarea id="e-notes" rows="3">{{ patient.notes }}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('edit-modal').classList.remove('open')">CANCEL</button>
+      <button class="btn-save" onclick="saveEdit()">SAVE CHANGES</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PID  = "{{ patient.id }}";
+const ROLE = "{{ role }}";
+
+// ── CHARTS ──────────────────────────────────────────────────────────
+const blinkCtx = document.getElementById('blinkChart').getContext('2d');
+const blinkChart = new Chart(blinkCtx,{
+  type:'line',
+  data:{labels:[],datasets:[{label:'Blink Rate',data:[],borderColor:'#ffb300',backgroundColor:'rgba(255,179,0,.07)',borderWidth:2,pointRadius:3,pointBackgroundColor:'#ffb300',tension:.4,fill:true}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#3d6a8a',font:{family:'Share Tech Mono',size:9}},grid:{color:'#162436'}},y:{ticks:{color:'#3d6a8a',font:{family:'Share Tech Mono',size:9}},grid:{color:'#162436'},min:0}}}
+});
+
+const gazeCtx = document.getElementById('gazeChart').getContext('2d');
+const gazeChart = new Chart(gazeCtx,{
+  type:'doughnut',
+  data:{labels:['LEFT','CENTER','RIGHT','UNKNOWN'],datasets:[{data:[0,0,0,0],backgroundColor:['rgba(0,212,255,.55)','rgba(57,255,143,.55)','rgba(255,79,123,.55)','rgba(61,106,138,.3)'],borderColor:['#00d4ff','#39ff8f','#ff4f7b','#162436'],borderWidth:2}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#c8e0f4',font:{family:'Share Tech Mono',size:10}}}},cutout:'62%'}
+});
+
+// ── EYE HELPER ──
+function setGaze(g){
+  const m={LEFT:{tx:-24,c:'var(--accent)'},RIGHT:{tx:24,c:'var(--accent2)'},CENTER:{tx:0,c:'var(--accent3)'},UNKNOWN:{tx:0,c:'var(--muted)'}};
+  const cfg=m[g]||m.UNKNOWN;
+  const iris=document.getElementById('iris');
+  iris.style.transform=`translateX(${cfg.tx}px)`;
+  iris.style.background=`radial-gradient(circle at 40% 40%,${cfg.c},#003d52)`;
+  iris.style.boxShadow=`0 0 12px ${cfg.c}`;
+  document.getElementById('gaze-lbl').textContent=g;
+  document.getElementById('gaze-lbl').style.color=cfg.c;
+}
+
+function fmtT(ts){return ts?new Date(ts*1000).toLocaleTimeString('en-IN',{hour12:false}):'--';}
+
+// ── HISTORY RENDER ──
+function renderHistory(hist){
+  const el=document.getElementById('history-list');
+  if(!hist||!hist.length){el.innerHTML='<span style="color:var(--muted);font-size:.75rem;font-family:var(--mono)">No history recorded</span>';return;}
+  el.innerHTML=[...hist].reverse().map((h,i,arr)=>`
+    <div class="h-entry">
+      <div class="h-line"><div class="h-dot"></div>${i<arr.length-1?'<div class="h-vert"></div>':''}</div>
+      <div class="h-body">
+        <div class="h-event">${h.event}</div>
+        <div class="h-date">${h.date}</div>
+        <div class="h-note">${h.note}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── POLL ──
+async function poll(){
+  try{
+    const d=await fetch(`/api/state/${PID}`).then(r=>r.json());
+    const l=d.latest;
+
+    // cam indicator
+    const ci=document.getElementById('cam-indicator');
+    ci.textContent=d.active?'◉ ACTIVE CAM':'○ NOT ACTIVE';
+    ci.style.color=d.active?'var(--accent)':'var(--muted)';
+
+    setGaze(l.gaze||'UNKNOWN');
+    document.getElementById('blink-count').textContent=l.blink_count??0;
+    document.getElementById('blink-rate').textContent=l.blink_rate??0;
+    document.getElementById('blink-bar').style.width=Math.min((l.blink_rate/15)*100,100)+'%';
+
+    if(l.genai){
+      const g=l.genai; const urg=(g.urgency||'low').toLowerCase();
+      document.getElementById('ai-intent').textContent=g.intent||'—';
+      document.getElementById('ai-urgency').innerHTML=`<span class="urgency-badge u-${urg}">${g.urgency}</span>`;
+      document.getElementById('ai-action').textContent=g.action||'—';
+    }
+
+    if(d.blink_history?.length){
+      blinkChart.data.labels=d.blink_history.map(b=>fmtT(b.t));
+      blinkChart.data.datasets[0].data=d.blink_history.map(b=>b.blinks);
+      blinkChart.update('none');
+    }
+
+    if(d.gaze_history?.length){
+      const cnt={LEFT:0,CENTER:0,RIGHT:0,UNKNOWN:0};
+      d.gaze_history.forEach(g=>{cnt[g.gaze]=(cnt[g.gaze]||0)+1;});
+      gazeChart.data.datasets[0].data=[cnt.LEFT,cnt.CENTER,cnt.RIGHT,cnt.UNKNOWN];
+      gazeChart.update('none');
+      document.getElementById('gaze-log').innerHTML=[...d.gaze_history].slice(-30).reverse().map(g=>`<span class="gchip gc-${g.gaze}">${g.gaze}</span>`).join('');
+    }
+
+    if(d.genai_history?.length){
+      document.getElementById('ai-log').innerHTML=[...d.genai_history].reverse().map(g=>`
+        <div class="ai-entry">
+          <div class="ae-time">${fmtT(g.t)}</div>
+          <span class="ae-intent">${g.intent}</span> · <span class="u-${(g.urgency||'low').toLowerCase()}" style="font-family:var(--mono);font-size:.65rem">${g.urgency}</span>
+          <div style="color:var(--muted);font-size:.73rem;margin-top:3px">${g.action}</div>
+        </div>`).join('');
+    }
+  }catch(e){}
+}
+
+// ── LOAD HISTORY (static from template) ──
+renderHistory({{ patient.history | tojson }});
+
+// ── EDIT ──
+function openEditModal(){document.getElementById('edit-modal').classList.add('open');}
+async function saveEdit(){
+  const body={
+    name:document.getElementById('e-name').value,
+    age:document.getElementById('e-age').value,
+    gender:document.getElementById('e-gender').value,
+    status:document.getElementById('e-status').value,
+    disease:document.getElementById('e-disease').value,
+    ward:document.getElementById('e-ward').value,
+    notes:document.getElementById('e-notes').value
+  };
+  const r=await fetch(`/api/patients/${PID}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(r.ok){toast('Patient updated','ok');document.getElementById('edit-modal').classList.remove('open');setTimeout(()=>location.reload(),700);}
+  else toast('Error','err');
+}
+
+// ── ADD HISTORY ──
+async function addHistory(){
+  const ev=document.getElementById('h-event').value.trim();
+  if(!ev){toast('Event title required','err');return;}
+  const body={event:ev,date:document.getElementById('h-date').value||new Date().toISOString().slice(0,10),note:document.getElementById('h-note').value};
+  const r=await fetch(`/api/patients/${PID}/history`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(r.ok){toast('History entry added','ok');['h-event','h-note'].forEach(id=>document.getElementById(id).value='');setTimeout(()=>location.reload(),600);}
+  else toast('Error','err');
+}
+
+// ── TOAST ──
+function toast(msg,type){const t=document.createElement('div');t.className=`toast t-${type}`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600);}
+
+// ── LOGOUT ──
+async function logout(){await fetch('/api/logout',{method:'POST'});window.location.href='/login';}
+
+poll();
+setInterval(poll,2000);
+</script>
+</body>
+</html>
